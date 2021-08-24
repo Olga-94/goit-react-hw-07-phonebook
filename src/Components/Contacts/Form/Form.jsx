@@ -3,13 +3,14 @@ import { IoPersonAddOutline } from 'react-icons/io5';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Form, Label, Input, Button } from './contactForm.styled';
-import { useDispatch } from 'react-redux';
-import contactsActions from '../../../redux/actions';
+import { useDispatch, useSelector } from 'react-redux';
+import { operations, selectors } from '../../../redux/index-export';
 
- export default function ContactForm(/*{ onSubmit }*/) {
+ function ContactForm() {
 
    const dispatch = useDispatch();
-
+   const contacts = useSelector(selectors.getContacts)
+   
    const formik = useFormik({
      initialValues: {
        name: '',
@@ -17,17 +18,20 @@ import contactsActions from '../../../redux/actions';
      },
      validationSchema: Yup.object({
        name: Yup.string()
-         .matches(/^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/, 'Имя может состоять только из букв, апострофа, тире и пробелов.')
+         .matches(/^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
+           'Имя может состоять только из букв, апострофа, тире и пробелов.')
+        .notOneOf(contacts.map(contact => contact.name), "Такой контакт уже существует")
          .required('Oбязательное поле'),
        number: Yup.string()
          .matches(/\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/, 'Номер телефона должен состоять цифр и может содержать пробелы, тире, круглые скобки и может начинаться с +')
          .required('Oбязательное поле'),
      }),
-     onSubmit: (values, { setSubmitting, resetForm }) => {
-       dispatch(contactsActions.addContact(values.name, values.number));
-       setSubmitting(false);
-       resetForm();
-     },
+     onSubmit: (values, { setSubmitting, resetForm }) => (
+       dispatch(operations.addContact({ name: values.name, number: values.number })),
+       setSubmitting(false),
+       
+         resetForm()
+     ),
    });
   
    const { handleSubmit, handleChange, isSubmitting, values, touched, errors } = formik;
@@ -66,6 +70,7 @@ import contactsActions from '../../../redux/actions';
    );
 }
  
+export default ContactForm;
 // ContactForm.propTypes = {
 //     onSubmit: PropTypes.func,
 // }

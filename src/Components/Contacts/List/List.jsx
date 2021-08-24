@@ -1,21 +1,26 @@
-import React from 'react';
+import React,  {useEffect} from 'react';
 import { FiPhone } from 'react-icons/fi';
 import { AiFillDelete } from 'react-icons/ai';
 import { ListContainer, ListItem, Button } from './contactList.styled';
 import { useSelector, useDispatch } from 'react-redux';
-import contactsActions from '../../../redux/actions';
+// import contactsActions from '../../../redux/actions';
+import { operations, selectors } from '../../../redux/index-export';
 
-export default function ContactList(/*{ contacts, onDeleteContact }*/) {
+ function ContactList(/*{ contacts, onDeleteContact }*/) {
  
-  const getVisibleContact = (allContacts, filter) => {
-    const normalFilter = filter.toLowerCase();
-    return allContacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalFilter)
-    );
-  }
-  const contacts = useSelector(({contacts:{items, filter}}) => getVisibleContact(items,filter));
-
+  // const getVisibleContact = (allContacts, filter) => {
+  //   const normalFilter = filter.toLowerCase();
+  //   return allContacts.filter(contact =>
+  //     contact.name.toLowerCase().includes(normalFilter)
+  //   );
+  // }
   const dispatch = useDispatch();
+  
+   useEffect(() => {
+        dispatch(operations.fetchContacts());
+   }, [dispatch]);
+  
+  const contacts = useSelector(selectors.getVisibleContacts);
   
   return (
     <ListContainer>
@@ -23,7 +28,7 @@ export default function ContactList(/*{ contacts, onDeleteContact }*/) {
         <ListItem key={id}>
           <FiPhone />
           {name}: {number}
-          <Button onClick={() => dispatch(contactsActions.deleteContact(id))}>
+          <Button onClick={() => dispatch(operations.deleteContact(id))}>
             <AiFillDelete />
             Delete
           </Button>
@@ -31,7 +36,9 @@ export default function ContactList(/*{ contacts, onDeleteContact }*/) {
       ))}
     </ListContainer>
   )
-}
+ }
+
+export default ContactList;
 
 // ContactList.propTypes = {
 //   contacts: PropTypes.arrayOf(
